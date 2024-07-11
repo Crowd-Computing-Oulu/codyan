@@ -1,0 +1,19 @@
+body {
+  background-color: #f8f9fa; /* Light grey background */
+}
+
+.card {
+  background-color: #ffffff; /* White card background */
+  max-height: 40vh; /* Ensure card takes up no more than 40% of the viewport height */
+  overflow: hidden; /* Hide overflowing content */
+}
+
+.card-content {
+  max-height: 100%; /* Ensure content takes up the full height of the card */
+  overflow-y: auto; /* Enable vertical scrolling if content overflows */
+}
+
+.footer {
+  padding: 1rem 0;
+  background-color: #f8f9fa;
+}

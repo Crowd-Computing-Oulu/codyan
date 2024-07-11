@@ -1,0 +1,8 @@
+codes_1,descriptions_1,codes_2,descriptions_2,codes_3,descriptions_3
+yummy,The food was delicious.,summer,The respondent visited the restaurant in summertime,food,The respondent thinks the food quality should be improved.
+yucky,The food tasted bad.,autumn,The respondent visited the restaurant in the autumn,atmosphere,The respondent thinks the atmosphere should be improved
+meh,The food was unremarkable.,spring,The respondent visited the restaurant in the spring,service,The respondent thinks the service should be improved
+,,winter,The respondent visited the restaurant in the winter,location,The respondent thinks the location should be improved
+,,dontremember,The respondent doesn't remember when they visited the restaurant,prices,The respondent thinks the prices should be improved
+,,,,selection,The respondent thinks the selection should be improved
+,,,,portions,The respondent thinks the portions should be improved

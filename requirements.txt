@@ -1,0 +1,6 @@
+flask==3.0.3
+pandas==2.0.3
+openai==1.35.4 
+nltk== 3.8.1 
+numpy==1.22.0
+matplotlib>=3
