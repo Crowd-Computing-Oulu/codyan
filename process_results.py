@@ -9,8 +9,8 @@ from nltk.metrics import masi_distance, jaccard_distance, binary_distance
 import matplotlib
 import matplotlib.pyplot as plt
 
-def process_results(data, p):
-    files = glob.glob("output/llmqc_q*.csv")
+def process_results(data, p, input_folder, output_folder):
+    files = glob.glob(f"{output_folder}/codyan_q*.csv")
     results = {}
 
     for file in files:
@@ -35,7 +35,11 @@ def process_results(data, p):
 
     returnval = {}
     returnval['results'] = results
-    returnval['icr'] = icr(results)
+    try:
+        returnval['icr'] = icr(results, input_folder)
+    except:
+        returnval['icr'] = None
+        
     # returnval['icr'] = 0
 
     csvdata = []
@@ -74,7 +78,7 @@ def process_results(data, p):
             if f'pvalues_{question_index+1}' not in row:
                 row[f'pvalues_{question_index+1}'] = ''
 
-    csv_filename = f'output/results.csv'
+    csv_filename = f'{output_folder}/results.csv'
     with open(csv_filename, mode='w', newline='', encoding='utf-8') as file:
         writer = csv.DictWriter(file, fieldnames=csv_columns)
         writer.writeheader()
@@ -82,11 +86,11 @@ def process_results(data, p):
     
     return returnval
 
-def process_results_binarymatrix(data, p):
-    files = glob.glob("output/llmqc_q*.csv")
+def process_results_binarymatrix(data, p,input_folder, output_folder):
+    files = glob.glob("output/codyan_q*.csv")
     results = {}
 
-    codes_df, _, _, _ = data
+    codes_df, responses_df, reference_df, questions, codes, reference = data
 
     for file in files:
         df = pd.read_csv(file)
@@ -139,17 +143,18 @@ def process_results_binarymatrix(data, p):
 
     returnval = {}
     returnval['results'] = results
-    returnval['icr'] = icr_alt(codes_df, results)
-    
-    # return returnval
+    try:
+        returnval['icr'] = icr_alt(codes_df, results, input_folder)
+    except:
+        returnval['icr'] = None
 
     return process_results(data,p)
 
 
 
-def icr(results):
+def icr(results, input_folder):
   
-    reference_df = pd.read_csv('input/reference.csv')
+    reference_df = pd.read_csv(f'{input_folder}/reference.csv')
 
     task_data = []
     # num_reference_rows = 10
@@ -183,7 +188,7 @@ def icr(results):
 
             if(response_index<num_reference_rows):
                 task_data.append(
-                    ('llmcq', f'Q{question_index+1}R{response_index+1}', frozenset(list(response.keys())))
+                    ('codyan', f'Q{question_index+1}R{response_index+1}', frozenset(list(response.keys())))
                 )
 
     # task_data = [('coder1','Item0',frozenset(['l1','l2'])),
@@ -250,16 +255,16 @@ def icr(results):
 
     return masi_task.alpha()
 
-def icr_alt(codes_df, results):
+def icr_alt(codes_df, results,input_folder, output_folder):
 
     # ICRss = []
     # for i in range(1, 50):
     ICRs = {}
 
-    for file in glob.glob("output/llmqc_q*.csv"):
+    for file in glob.glob(f"{output_folder}/codyan_q*.csv"):
         question_id = int(file.split("_q")[1].split(".")[0])
 
-        reference_df = pd.read_csv('input/reference.csv')
+        reference_df = pd.read_csv(f"{input_folder}/reference.csv")
 
         task_data = []
         num_reference_rows = len(reference_df)
@@ -288,7 +293,7 @@ def icr_alt(codes_df, results):
 
                     if(response_index<num_reference_rows):
                         task_data.append(
-                            ('llmcq', f'Q{question_index+1}R{response_index+1}', frozenset(list(response.keys())))
+                            ('codyan', f'Q{question_index+1}R{response_index+1}', frozenset(list(response.keys())))
                         )
 
         task_data_empties_handled = []

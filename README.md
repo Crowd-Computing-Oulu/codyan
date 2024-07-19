@@ -1,6 +1,6 @@
 ![Screenshot](.github/index.png)
 
-# LLMQC App
+# Codyan
 Large Language Model Qualitative Coder Application.
 
 Use this to apply pre-made codes with descriptions to pieces of text, for example labelling questionnaire responses. 
@@ -16,7 +16,7 @@ Loosely based on the methods defined by [Tai et al.](https://journals.sagepub.co
    2. Enter the data you want to code in `responses.csv`
    3. Enter your reference, human-coded lines, if you have any, in `reference.csv` - this is for intercoder reliability calculations
 3. Install dependencies with `pip install -r requirements.txt`
-4. Run the LLMQC with `python app.py`
+4. Run the Codyan with `python app.py`
 5. Navigate to `http://127.0.0.1:8000`
 6. [Obtain](https://help.openai.com/en/articles/4936850-where-do-i-find-my-openai-api-key) and enter your OpenAI API key
 7. Follow the on-screen instructions to load your input data, your codeset, perform coding and analyse your results

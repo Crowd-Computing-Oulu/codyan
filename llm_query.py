@@ -6,6 +6,10 @@ import os.path
 import pandas as pd
 import numpy as np
 from concurrent.futures import ThreadPoolExecutor
+import time
+import shutil
+import os
+import traceback
 
 CLIENT = None
 
@@ -13,28 +17,56 @@ LOG_PROMPTS = True
 MODEL = "gpt-4-turbo"
 TEMP = 0.8
 
-def llm_query_efficient_parallel(codes_df, responses_df, update_status, iterations, response_limit, threads, model, apikey):
+pause_event = None
+stop_event = None
+
+def llm_query_efficient_parallel(codes_df, responses_df, update_status, iterations, response_limit, threads, model, apikey, pause_ent, stop_ent, output_path):
     
-    global MODEL
-    global CLIENT
+    try:
+        global MODEL
+        global CLIENT
+        global pause_event
+        global stop_event
 
-    MODEL = model
+        pause_event = pause_ent
+        stop_event = stop_ent
 
-    CLIENT = OpenAI(api_key=apikey)
+        MODEL = model
 
-    splits = [responses_df.iloc[i::threads] for i in range(threads)]
-    num_responses = len(responses_df)
+        CLIENT = OpenAI(api_key=apikey)
 
-    # Use ThreadPoolExecutor to run the function in parallel
-    with ThreadPoolExecutor(max_workers=threads) as executor:
-        futures = [executor.submit(llm_query_efficient, codes_df, split, update_status, iterations, response_limit, num_responses) for split in splits]
-        
-        # Gather results (if needed)
-        results = [future.result() for future in futures]
+        splits = [responses_df.iloc[i::threads] for i in range(threads)]
+        num_responses = len(responses_df)
+
+        # Use ThreadPoolExecutor to run the function in parallel
+        with ThreadPoolExecutor(max_workers=threads) as executor:
+            futures = [executor.submit(llm_query_efficient, codes_df, split, update_status, iterations, response_limit, num_responses, output_path) for split in splits]
+            
+            # Gather results (if needed)
+            results = [future.result() for future in futures]
+
+
+        # copy to /output
+        if not os.path.exists(output_path):
+            os.makedirs(output_path)
+        if os.path.exists(f'{output_path}/temp'):
+            for item in os.listdir(f'{output_path}/temp'):
+                s = os.path.join(f'{output_path}/temp', item)
+                d = os.path.join(f'{output_path}', item)
+                if os.path.isdir(s):
+                    shutil.copytree(s, d, dirs_exist_ok=True)
+                else:
+                    shutil.copy2(s, d)
+
+    except Exception as e:
+        update_status((f"[ERROR] {e}", 0))
+        stop_event.set()
+        print(traceback.format_exc())
+        return None
     
     return results
 
-def llm_query_efficient(codes_df, responses_df, update_status, iterations, response_limit, num_responses):
+def llm_query_efficient(codes_df, responses_df, update_status, iterations, response_limit, num_responses, output_path):
 
     global LOG_PROMPTS
     
@@ -92,6 +124,13 @@ def llm_query_efficient(codes_df, responses_df, update_status, iterations, respo
                     })
 
                 messages = [{"role": "user", "content": prompt}] 
+
+                while(pause_event.is_set()):
+                    time.sleep(1)
+
+                if(stop_event.is_set()):
+                    return
+
                 chat = CLIENT.chat.completions.create(
                     model=MODEL,
                     messages=messages,
@@ -109,15 +148,15 @@ def llm_query_efficient(codes_df, responses_df, update_status, iterations, respo
                     (current_step*100)/total_steps
                     )
                 )
-                    
+
                 current_step+= 1
                 
                 print(f'PROMPT: {prompt}\nCHATGPT ANSWER: {chatgpt_response}\nRESULT: {result}')
                 results.append(result)
 
-            file_exists = os.path.isfile(f'output/llmqc_q{num_q+1}.csv')
+            file_exists = os.path.isfile(f'{output_path}/temp/codyan_q{num_q+1}.csv')
             # Write results to CSV file
-            csv_filename = f'output/llmqc_q{num_q+1}.csv'
+            csv_filename = f'{output_path}/temp/codyan_q{num_q+1}.csv'
             with open(csv_filename, mode='a', newline='', encoding='utf-8') as file:
                 writer = csv.DictWriter(file, fieldnames=fieldnames)
                 if not file_exists:
@@ -126,7 +165,7 @@ def llm_query_efficient(codes_df, responses_df, update_status, iterations, respo
 
         if(LOG_PROMPTS):
             # Write results to CSV file
-            csv_filename = f'output/prompts.csv'
+            csv_filename = f'{output_path}/temp/prompts.csv'
             file_exists = os.path.isfile(csv_filename)
             with open(csv_filename, mode='w', newline='', encoding='utf-8') as file:
                 fieldnames = [

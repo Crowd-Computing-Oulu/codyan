@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Codyan | Instructions</title>
+  <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='img/codyan-128px.png') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Homemade+Apple&display=swap" rel="stylesheet">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+    crossorigin="anonymous"></script>
+
+  <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+</head>
+
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">
+        <img src="{{ url_for('static', filename='img/codyan-512px.png') }}" width="32px" class="me-2">
+        <strong>
+          Codyan
+        </strong>
+        <span style="font-size: x-small;">
+          {{version}}
+        </span>
+      </a>
+      <div class="collapse navbar-collapse">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link" aria-current="page" href="/">Home</a>
+          </li>
+          <li class="nav-item align-right">
+            <a class="nav-link active" href="/instructions">Instructions</a>
+          </li>
+          <li class="nav-item align-right">
+            <a class="nav-link" href="/about">About</a>
+          </li>
+        </ul>
+        <ul class="navbar-nav">
+          <li class="nav-item me-auto">
+            <a class="nav-link" href="https://github.com/Crowd-Computing-Oulu/codyan-app"><img
+                src="/static/github.svg" /> Source</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class=" container-sm">
+    <div class="card m-3" style="height: calc(100vh - 220px);">
+      <div class="card-body" style="overflow-y: scroll; overflow-x: hidden;">
+      <h2> User Guide</h2>
+      <h4> 1. Input </h4>
+      <p>
+        The input consists of three files, of which one is optional. Prepare and upload these files based on the samples provided on the Input page. Press the "Remove" button to delete a file from Codyan and upload a new one if needed. If an upload was successful and the file format was correct, a summary of the file contents will be displayed.
+        <ol>
+          <li><code>questions.csv</code></li>This file contains the the data you want to label, where each column contains the responses to the question in the column header. See a sample file containing 10 responses to a 3-item questionnaire <a href="https://github.com/Crowd-Computing-Oulu/codyan-app/blob/main/input_sample/responses.csv">here</a>. Make sure to title each column of responses as question_<i>N</i>: <i>your_question</i> where <i>N</i> is the number of the question and <i>your_question</i> is the question the participants were asked to answer. At least one column is required, but there is no upper limit.
+         <li><code>codebook.csv</code></li>This file contains the codebooks for each question, comprising of code names and code descriptions. If all your responses are coded using the same codebook, simply repeat the same columns for each question. See a sample file containing codes for the sample restaurant feedback questionnaire <a href="https://github.com/Crowd-Computing-Oulu/codyan-app/blob/main/input_sample/codes.csv">here</a>. Make sure to title each pair of columns as codes_<i>N</i> and descriptions_<i>N</i> where <i>N</i> is the number of the question the codes belong to. The number of columns should be exactly double what is in questions.csv, even if you do not have separate codebooks for each question.
+          <li>(optional) <code>reference.csv</code></li>
+          The optional reference file includes human-assigned codes for the first K responses. See a sample file containing assigned codes for first 5 out of total 10 responses <a href="https://github.com/Crowd-Computing-Oulu/codyan-app/blob/main/input_sample/reference.csv">here</a>. The number of columns should match the number of questions in questions.csv exactly, with matching column numbering as well. There could be any number of rows in this file, as long as each row corresponds to the same row in the responses. This file is used to determine level of agreement between the Codyan and the human using the Krippendorff's Alpha with MASI distance on the Results page.
+        </ol>
+      </p>
+
+      <h4> 2. Processing </h4>
+      
+      On this page, you can start assigning codes to your data. 
+
+      The following options are available for you:
+
+      <ol>
+        <li><strong>API Key:</strong> fill in this field with your OpenAI API key. If you do not have a key yet, start obtaining yours <a href="https://help.openai.com/en/articles/4936850-where-do-i-find-my-openai-api-key">here</a>.</li>
+        <li><strong>Limit responses:</strong> if you do not want to process your entire dataset, you can limit the processing to the first N lines. Set it to 0 to process the entire dataset.</li>
+        <li><strong>Iterations:</strong> Repeating the labelling process many times is what allows Codyan to provide statistical probability with codes and increase the reliabilty of the output. Set the iterations between 10 and 100 for optimal performance and accuracy.</li>
+        <li><strong>Threads:</strong> OpenAI allows parallel requests. By processing your data on multiple threads, you can finish the coding process faster. Recommended to set below 32 to avoid reaching request frequency limits.</li>
+        <li><strong>API Model:</strong> OpenAI has multiple models available. Read the differences between them <a href="https://platform.openai.com/docs/models">here</a>.</li>
+      </ol>
+      
+      <h4> 3. Results </h4>
+
+      <h4> 4. Sessions </h4>
+
+      <h2> Installation Guide</h2>
+
+      <h2> Contribution Guide</h2>
+    </div>
+  </div>
+  </div>
+
+
+  <footer class="footer text-center small mt-1 card rounded-0">
+    <div class="container-sm">
+        <div class="row align-center">
+            <div class="offset-2 col-2"> <p class="text-muted">Daniel Szabo  <a href="mailto:daniel.szabo@oulu.fi">daniel.szabo@oulu.fi</a>
+            </p></div>
+            <div class="col-2"><p class="text-muted"><a
+              href="https://github.com/Crowd-Computing-Oulu/codyan-app/blob/main/LICENSE">License</a></p></div>
+            <div class="col-2">
+                <p class="text-muted"><a href="crowdcomputing.net">Crowd Computing Oulu</a></p>
+            </div>
+            <div class="col-2">
+                <p class="text-muted"><a href="https://github.com/Crowd-Computing-Oulu/codyan-app">GitHub
+                        Repository</a></p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+</body>
+
+</html>

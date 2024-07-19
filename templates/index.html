@@ -1,200 +1,393 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LLMQC App</title>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-</head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="#">LLMQC App</a>
-    </nav>
 
-    <div class="container mt-4">
-        <div class="row">
-            <div class="col-md-6">
-                <div class="card mb-4">
-                    <div class="card-body card-content">
-                        <h5 class="card-title"><strong>1.</strong> Questions</h5>
-                        <ul class="list-group">
-                            {% for question in questions %}
-                                <li class="list-group-item">
-                                    <strong>Question {{ question.number }}:</strong> {{ question.text }}<br>
-                                    <small>
-                                        <strong>Has Codes:</strong> {{ 'Yes' if question.has_codes else 'No' }}<br>
-                                        <strong>Number of Responses:</strong> {{ question.num_responses }}
-                                    </small>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="card mb-4">
-                    <div class="card-body card-content">
-                        <h5 class="card-title"><strong>2.</strong> Codes</h5>
-                        <div class="row" style="overflow-x: auto; min-width: 200px;">
-                            {% for code_col, code_list in codes.items() %}
-                                <div class="col-md-4" style="padding-right: 5px; padding-left: 5px;">
-                                    <h6>Codes for Question {{ loop.index }} Responses</h6>
-                                    <ul class="list-group mb-3">
-                                        {% for code in code_list %}
-                                            <li class="list-group-item" style="padding-top: 5px; padding-bottom: 5px;">
-                                                <strong>{{ code.code }}</strong><br>
-                                                <small>{{ code.description }}</small>
-                                            </li>
-                                        {% endfor %}
-                                    </ul>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-6">
-                <div class="card mb-4">
-                    <div class="card-body" style="overflow-y: scroll;">
-                        <h5 class="card-title"><strong>3.</strong> Process</h5>
-                        <div class="row">
-                            <div class="col-md-4">
-                                <label for="limit">Limit responses <br> </label>
-                                <input id="limit" class="form-control mb-2" type="number" value="0">
-                                <span class="text-muted">(0 = no limit)</span>
-                            </div>
-                            <div class="col-md-4">
-                                <label for="iterations">Iterations</label>
-                                <input id="iterations" class="form-control mb-2" type="number" value="10">
-                            </div>
-                            <div class="col-md-4">
-                                <label for="threads">Threads</label>
-                                <input id="threads" class="form-control mb-5" type="number" value="1">
-                            </div>
-                            <div class="col-md-4">
-                                <label for="model">API Model</label>
-                                <select id="model" class="form-control mb-2">
-                                    <option value="gpt-4o">GPT-4o</option>
-                                    <option value="gpt-4-turbo">GPT-4 Turbo</option>
-                                    <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4">
-                                <label for="apikey">API Key</label>
-                                <input id="apikey" class="form-control mb-2" type="password" placeholder="Enter your API key">
-                            </div>
-                        </div>
-                        <button id="start-btn" class="btn btn-primary">Run</button>
-                        <button id="stop-btn" class="btn btn-danger">Stop</button>
-                        <p class="mt-5"><strong>Status:</strong> <span id="process-status-string">-</span></p>
-                        <div class="progress mt-2">
-                            <div id="progress-bar" class="progress-bar" role="progressbar" style="width: 0%;"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-6">
-                <div class="card mb-4">
-                    <div class="card-body" style="overflow-y: scroll;">
-                        <h5 class="card-title"><strong>4.</strong> Results</h5>
-                        <div class="row">
-                            <div class="col-md-4">
-                                <label for="pvalue">p-Value<br> </label>
-                                <input id="pvalue" class="form-control mb-2 " type="number" value="0.95">
-                                <!-- <span class="text-muted">(0 = no limit)</span> -->
-                            </div>
-                        </div>
-                        <button id="load-results-btn" class="btn btn-primary mb-3">Load Results</button>
-                        <p>Krippendorff's Alpha using MASI: <span id="icr">?</span></p>
-                        <div class=" mb-5" id="results-container" >
-                            <!-- Results will be loaded here -->
-                        </div>
-                        <!-- <a href="/download_results" class="btn btn-success">Download Results</a> -->
-                    </div>
-                </div>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Codyan | Home</title>
+  <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='img/codyan-128px.png') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Homemade+Apple&display=swap" rel="stylesheet">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+    crossorigin="anonymous"></script>
+
+  <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+</head>
+
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">
+        <img src="{{ url_for('static', filename='img/codyan-512px.png') }}" width="32px" class="me-2">
+                <strong>
+                    Codyan
+                </strong>
+                <span style="font-size: x-small;">
+                    {{version}}
+                  </span>
+            </a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="#">Home</a>
+                    </li>
+                    <li class="nav-item align-right">
+                        <a class="nav-link" href="/instructions">Instructions</a>
+                    </li>
+                    <li class="nav-item align-right">
+                        <a class="nav-link" href="/about">About</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item me-auto">
+                        <a class="nav-link" href="https://github.com/Crowd-Computing-Oulu/codyan-app"><img
+                                src="/static/github.svg" /> Source</a>
+                    </li>
+                </ul>
             </div>
         </div>
+    </nav>
+
+    <div class="container">
+        <ul class="nav nav-pills justify-content-center mt-3 ms-5 me-5" id="tab" role="tablist">
+            <li class="nav-item me-2 dark" role="presentation">
+                <button class="sub-nav nav-link" id="home-tab" data-bs-toggle="tab" data-bs-target="#home" type="button"
+                    role="tab" aria-controls="home" aria-selected="true"><strong>1.</strong> Input</button>
+            </li>
+            <li class="nav-item me-2" role="presentation">
+                <button class="sub-nav nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button"
+                    role="tab" aria-controls="profile" aria-selected="false"><strong>2.</strong> Processing</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="sub-nav nav-link" id="contact-tab" data-bs-toggle="tab" data-bs-target="#contact" type="button"
+                    role="tab" aria-controls="contact" aria-selected="false"><strong>3.</strong> Results</button>
+            </li>
+        </ul>      
+
+        <div class="card m-3" style="height: calc(100vh - 320px);">
+            <div class="card-body" style="overflow-y: scroll; overflow-x: hidden;">
+                <div class="tab-content" id="myTabContent">
+                    <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+                        <div class="card m-3">
+                            <div class="card-body card-content">
+                               
+                                {% if questions %}
+                                <ul class="list-group">
+                                    <div class="d-flex">
+                                        <h5 class="card-title mb-3"><strong>Questions</strong> </h5>
+
+                                        <button
+                                        id="remove_questions" class="btn btn-outline-danger ms-auto mb-2 btn-sm">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
+                                                <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"/>
+                                            </svg>
+                                            Remove
+                                        </button>
+                                    </div>
+                                    {% for question in questions %}
+                                    <li class="list-group-item">
+                                        <strong>Question {{ question.number }}:</strong> {{ question.text }}<br>
+                                        <small>
+                                            <strong>Number of Responses:</strong> {{ question.num_responses }}
+                                        </small>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                                {% else %}
+                                 <h5 class="card-title mb-3"><strong>Responses</strong> </h5>
+                                    <label for="responsescsv" class="form-label">Please upload CSV file containing data to label. <a href="https://github.com/Crowd-Computing-Oulu/codyan-app/blob/main/input_sample/responses.csv">See sample file</a> </label>
+                                    <input class="form-control" type="file" id="responsescsv">
+                                    <button id="questionsUploadButton" type="button" class="btn btn-primary mt-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-cloud-arrow-up" viewBox="0 0 16 16">
+                                            <path fill-rule="evenodd" d="M7.646 5.146a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 6.707V10.5a.5.5 0 0 1-1 0V6.707L6.354 7.854a.5.5 0 1 1-.708-.708z"/>
+                                            <path d="M4.406 3.342A5.53 5.53 0 0 1 8 2c2.69 0 4.923 2 5.166 4.579C14.758 6.804 16 8.137 16 9.773 16 11.569 14.502 13 12.687 13H3.781C1.708 13 0 11.366 0 9.318c0-1.763 1.266-3.223 2.942-3.593.143-.863.698-1.723 1.464-2.383m.653.757c-.757.653-1.153 1.44-1.153 2.056v.448l-.445.049C2.064 6.805 1 7.952 1 9.318 1 10.785 2.23 12 3.781 12h8.906C13.98 12 15 10.988 15 9.773c0-1.216-1.02-2.228-2.313-2.228h-.5v-.5C12.188 4.825 10.328 3 8 3a4.53 4.53 0 0 0-2.941 1.1z"/>
+                                          </svg>
+                                          Upload</button> 
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="card m-3">
+                            <div class="card-body card-content">
+                                <h5 class="card-title mb-3"><strong>Codebook</strong> </h5>
+                               
+                                {% if codes %}
+                                <div class="d-flex">
+
+                                    <button
+                                    id="remove_codes" class="btn btn-outline-danger ms-auto mb-2 btn-sm">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
+                                            <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"/>
+                                        </svg>
+                                        Remove
+                                    </button>
+                                </div>
+
+                                    <div class="row" style="overflow-x: auto; min-width: 200px;">
+                                        {% for code_col, code_list in codes.items() %}
+                                        <div class="col-md-4" style="padding-right: 15px; padding-left: 15px;">
+                                            <h6>Codes for Question {{ loop.index }} Responses</h6>
+                                            <ul class="list-group">
+                                                {% for code in code_list %}
+                                                <li class="list-group-item" style="padding-top: 5px; padding-bottom:  0;">
+                                                    
+                                                    <p class="lh-1 small mb-1 ms-2 ">
+                                                        <strong class="me-2">{{ code.code }}  </strong> <span class="text-body-secondary">{{ code.description
+                                                        }}</span></p>
+                                                </li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                    {% else %}
+                                    
+                                    <label for="codebookcsv" class="form-label">Please upload CSV file containing codebook. <a href="https://github.com/Crowd-Computing-Oulu/codyan-app/blob/main/input_sample/codes.csv">See sample file</a> </label>
+                                    <input class="form-control" type="file" id="codebookcsv">
+                                    <button id="codebookUploadButton" type="button" class="btn btn-primary mt-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-cloud-arrow-up" viewBox="0 0 16 16">
+                                            <path fill-rule="evenodd" d="M7.646 5.146a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 6.707V10.5a.5.5 0 0 1-1 0V6.707L6.354 7.854a.5.5 0 1 1-.708-.708z"/>
+                                            <path d="M4.406 3.342A5.53 5.53 0 0 1 8 2c2.69 0 4.923 2 5.166 4.579C14.758 6.804 16 8.137 16 9.773 16 11.569 14.502 13 12.687 13H3.781C1.708 13 0 11.366 0 9.318c0-1.763 1.266-3.223 2.942-3.593.143-.863.698-1.723 1.464-2.383m.653.757c-.757.653-1.153 1.44-1.153 2.056v.448l-.445.049C2.064 6.805 1 7.952 1 9.318 1 10.785 2.23 12 3.781 12h8.906C13.98 12 15 10.988 15 9.773c0-1.216-1.02-2.228-2.313-2.228h-.5v-.5C12.188 4.825 10.328 3 8 3a4.53 4.53 0 0 0-2.941 1.1z"/>
+                                          </svg>
+                                          Upload</button>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="card m-3">
+                            <div class="card-body card-content">
+                                
+                                
+                                {% if reference %}
+                                <div class="d-flex">
+                                    <h5 class="card-title mb-3"><strong>Reference</strong> </h5>
+
+                                    <button
+                                    id="remove_reference" class="btn btn-outline-danger ms-auto mb-2 btn-sm">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
+                                            <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"/>
+                                        </svg>
+                                        Remove
+                                    </button>
+                                </div>
+
+                                    <div class="row">
+                                        {% for question, code_list in reference.items() %}
+                                        <div class="col-md-4" style="padding-right: 15px; padding-left: 15px;">
+                                            <h6>Reference Question {{ loop.index }} Codes</h6>
+                                            <ul class="list-group">
+                                                {% for code in code_list %}
+                                                <li class="list-group-item" style="padding-top: 5px; padding-bottom: 0;">
+                                                    <p class="lh-1 small mb-1 ms-2 "><strong>{{ code[0]+1 }}</strong>
+                                                        {% if code[1] != None %}
+                                                        <span class="ms-2 text-body-secondary">{{ code[1] }}</span> 
+                                                        {% endif %}
+                                                    </p>
+                                                </li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                <div class="d-flex">
+                                    <h5 class="card-title mb-3"><strong>Reference</strong> </h5>
+
+                                </div>
+                                <label for="referencecsv" class="form-label">Please upload CSV file containing human-coded responses.  <a href="https://github.com/Crowd-Computing-Oulu/codyan-app/blob/main/input_sample/responses.csv">See sample file</a> </label>
+                                <input class="form-control" type="file" id="referencecsv">
+                                <button id="referenceUploadButton" type="button" class="btn btn-primary mt-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-cloud-arrow-up" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M7.646 5.146a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 6.707V10.5a.5.5 0 0 1-1 0V6.707L6.354 7.854a.5.5 0 1 1-.708-.708z"/>
+                                        <path d="M4.406 3.342A5.53 5.53 0 0 1 8 2c2.69 0 4.923 2 5.166 4.579C14.758 6.804 16 8.137 16 9.773 16 11.569 14.502 13 12.687 13H3.781C1.708 13 0 11.366 0 9.318c0-1.763 1.266-3.223 2.942-3.593.143-.863.698-1.723 1.464-2.383m.653.757c-.757.653-1.153 1.44-1.153 2.056v.448l-.445.049C2.064 6.805 1 7.952 1 9.318 1 10.785 2.23 12 3.781 12h8.906C13.98 12 15 10.988 15 9.773c0-1.216-1.02-2.228-2.313-2.228h-.5v-.5C12.188 4.825 10.328 3 8 3a4.53 4.53 0 0 0-2.941 1.1z"/>
+                                        </svg>
+                                        Upload</button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+                        <div class="card m-3">
+                            <div class="card-body" >
+                                <h5 class="card-title"><strong>Process</strong> </h5>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <label for="apikey">API Key</label>
+                                        <input id="apikey" class="form-control mb-2" autocomplete="on" type="password"
+                                        placeholder="Enter your OpenAI API key">
+                                    </div>
+                                </div>
+                                <div class="col-md-4 d-flex align-items-center mb-3">
+                                    <input type="checkbox" class="form-check-input me-2" id="saveApiKey">
+                                    <label class="form-check-label" for="saveApiKey">Remember API Key</label>
+                                </div>
+                                
+                                
+                                <h6><strong>Configuration</strong> </h6>
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <label for="limit">Limit responses <br> </label>
+                                        <input id="limit" class="form-control mb-2" type="number" value="0">
+                                        <span class="text-muted">(0 = no limit)</span>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="iterations">Iterations</label>
+                                        <input id="iterations" class="form-control mb-2" type="number" value="10">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="threads">Threads</label>
+                                        <input id="threads" class="form-control mb-5" type="number" value="1">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="model">API Model</label>
+                                        <select id="model" class="form-control mb-2">
+                                            <option selected value="gpt-4o-mini">GPT-4o mini</option> 
+                                            <option value="gpt-4o">GPT-4o</option>
+                                            <option value="gpt-4-turbo">GPT-4 turbo</option>
+                                            <option value="gpt-3.5-turbo">GPT-3.5 turbo</option>
+                                        </select>
+                                    </div>
+                                   
+                                </div>
+                                <div class="text-center p-3">
+
+                                    {% if questions and codes  %}
+                                        <button id="start-btn" class="btn btn-primary">Run</button>
+                                        <button id="pause-btn" class="btn btn-secondary" disabled>Pause</button>
+                                        <button id="stop-btn" class="btn btn-danger" disabled>Stop</button>
+                                    {% else %}
+                                        <button id="start-btn" class="btn btn-primary" disabled>Run</button>
+                                        <button id="pause-btn" class="btn btn-secondary " disabled>Pause</button>
+                                        <button id="stop-btn" class="btn btn-danger " disabled>Stop</button>
+                                        <br>
+                                        <div class="alert alert-warning mt-3" role="alert">
+                                            You must upload response and codebook data first.
+                                          </div>
+                                        
+                                    {% endif %}
+                                    
+                                </div>
+                                <div class="text-center">
+                                    <p class="mt-5"><strong>
+                                        <span class="mt-2" id="process-status-type"></span>
+                                    </strong>
+                                       </p>
+                                       <p class="small"> <span id="process-status-string"></span></p>
+                                    <div class="progress mt-2">
+                                        <div id="progress-bar" class="progress-bar" role="progressbar" style="width: 0%;">
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">
+                        <div class="card m-3">
+                            <div class="card-body" style="overflow-y: scroll;">
+                                <h5 class="card-title"><strong>Results</strong></h5>
+
+                                <div class=" text-center">
+
+                                {% if result_data_exists %}
+                                    <button id="download-llm-output-btn" class="btn btn-outline-primary mb-1"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
+                                        <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
+                                        <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/>
+                                      </svg> Download LLM Output</button>
+                                {% else %}
+                                    <button id="download-llm-output-btn" class="btn btn-outline-primary mb-1" disabled><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
+                                        <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
+                                        <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/>
+                                      </svg> Download LLM Output</button>
+                                {% endif %}
+                                <p class="small lh-1 text-muted" style="max-width: 50%; margin: auto;">See all of the LLM assigned codes broken down per iteration. (optional)</p>
+
+
+                                
+
+                                    <div class="mt-5" style="max-width: 50%; margin: auto;">
+                                        <label for="pvalue">p-Value<br> </label>
+                                        <input style="max-width: 120px; margin: auto;" id="pvalue" class="form-control mb-2 " type="number" value="0.95" min="0" max="1" step="0.05">
+                                        <!-- <span class="text-muted">(0 = no limit)</span> -->
+                                    </div>
+                               
+                                {% if result_data_exists %}
+                                    <button id="load-results-btn" class="btn btn-primary mb-1">Apply p-Value</button>
+                                {% else %}
+                                    <button id="load-results-btn" class="btn btn-primary mb-1" disabled>Apply p-Value</button>
+                                {% endif %}
+                                <p style="max-width: 50%; margin: auto;" class="small col-4 lh-1 text-muted">Set level of confidence (consistency between iterations) required to apply a code. </p>
+                                <strong><p id="icr"></p></strong>
+                                <div class="mb-3 text-start ms-5 me-5" id="results-container">
+                                    <!-- Results will be loaded here -->
+                                </div>
+
+
+                                <!-- <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="#0d6efd" class="bi bi-arrow-down-circle-fill m-5" viewBox="0 0 16 16">
+                                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M8.5 4.5a.5.5 0 0 0-1 0v5.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293z"/>
+                                  </svg> -->
+
+
+                                  
+
+                                <button disabled  id="download-results-btn" class="btn btn-success mb-1"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
+                                    <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
+                                    <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/>
+                                    </svg> Download results as CSV</button>
+                                   
+                                <p style="max-width: 50%; margin: auto;" class="small col-4 lh-1 text-muted">Download the LLM-assigned filtered by your p-Value.</p>
+
+                                <!-- <a href="/download_results" class="btn btn-success">See Results</a> -->
+                            </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+        <form id="sessionForm" method="post" action="{{ url_for('set_session_id') }}" class="input-group-append mt-3 ms-3">
+            <div class="input-group mb-3">
+                <span class="input-group-text" style="font-size: 0.8rem;">Session ID: {{ session_id }}</span>
+                <button style="font-size: 0.8rem" type="button" class="btn btn-secondary copy-btn" onclick="copyToClipboard('{{ session_id }}')"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-clipboard" viewBox="0 0 16 16">
+                    <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1z"/>
+                    <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0z"/>
+                  </svg></button>
+                <input type="text" style="max-width: 160px; font-size: 0.8rem;" class="form-control" id="session_id_input" name="session_id_input" placeholder="Enter new session ID" required>
+                <button type="submit" class="btn btn-primary input-group-append" style="font-size: 0.8rem;">Switch</button>
+            </div>
+        </form>
     </div>
 
-    <footer class="footer text-center mt-4">
-        <div class="container">
-            <p class="text-muted">Daniel Szabo&lt;<a href="mailto:daniel.szabo@oulu.fi">daniel.szabo@oulu.fi</a>&gt;</p>
-            <p class="text-muted"><a href="crowdcomputing.net">Crowd Computing Oulu</a></p>
-            <p class="text-muted"><a href="https://github.com/Crowd-Computing-Oulu/llmqc-app">GitHub Repository</a></p>
+
+
+    <footer class="footer text-center small mt-1 card rounded-0">
+        <div class="container-sm">
+            <div class="row align-center">
+                <div class="offset-2 col-2"> <p class="text-muted">Daniel Szabo  <a href="mailto:daniel.szabo@oulu.fi">daniel.szabo@oulu.fi</a>
+                </p></div>
+                <div class="col-2"><p class="text-muted"><a
+                  href="https://github.com/Crowd-Computing-Oulu/codyan-app/blob/main/LICENSE">License</a></p></div>
+                <div class="col-2">
+                    <p class="text-muted"><a href="crowdcomputing.net">Crowd Computing Oulu</a></p>
+                </div>
+                <div class="col-2">
+                    <p class="text-muted"><a href="https://github.com/Crowd-Computing-Oulu/codyan-app">GitHub
+                            Repository</a></p>
+                </div>
+            </div>
         </div>
     </footer>
 
-    <script>
-        function updateProgress() {
-            $.get("/process_status", function(data) {
-                $("#progress-bar").css("width", data.progress + "%");
-                if (data.running) {
-                    setTimeout(updateProgress, 1000);
-                    $("#process-status-string").text(data.string)
-                } else {
-                    setTimeout(updateProgress, 5000);
-                    $("#process-status-string").text(data.string)
-                }
-            });
-        }
 
-        $("#start-btn").click(function() {
-            var limit = $("#limit").val();
-            var iterations = $("#iterations").val();
-            var threads = $("#threads").val();
-            var model = $("#model").val();
-            var apikey = $("#apikey").val();
-            $.ajax({
-                url: "/start_process",
-                type: "POST",
-                contentType: "application/json",
-                data: JSON.stringify({ 
-                    limit: limit ,
-                    iterations: iterations,
-                    threads: threads,
-                    model: model,
-                    apikey: apikey
-                }),
-                success: function() {
-                    updateProgress();
-                }
-            });
-        });
-
-        $("#stop-btn").click(function() {
-            $.get("/stop_process");
-        });
-
-        $("#load-results-btn").click(function() {
-            // Get the value of the pvalue text field
-            let pvalue = $("#pvalue").val();
-
-            // Construct the URL with the pvalue parameter
-            let url = `/get_results?pvalue=${pvalue}`;
-
-            // Make the AJAX GET request with the updated URL
-            $.get(url, function(data) {
-                let resultsHtml = '';
-                $("#icr").text(data.icr.toFixed(2))
-                results = data.results
-                for (const [question, responses] of Object.entries(results)) {
-                    resultsHtml += `<strong>Question ${question}</strong><br>`;
-                    for (const [response, ratios] of Object.entries(responses)) {
-                        resultsHtml += `<span>${response} - `;
-                        let ratiosArray = [];
-                        for (const [code, ratio] of Object.entries(ratios)) {
-                            ratiosArray.push(`${code} (p = ${(ratio).toFixed(2)})`);
-                        }
-                        resultsHtml += ratiosArray.join(', ') + '</span><br>';
-                    }
-                }
-                $("#results-container").html(resultsHtml);
-            });
-        });
-    </script>
 </body>
+
+<script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+
 </html>
