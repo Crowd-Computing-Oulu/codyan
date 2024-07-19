@@ -23,3 +23,10 @@ Loosely based on the methods defined by [Tai et al.](https://journals.sagepub.co
 8. Find your results in the `/output` folder and on-screen. The used prompts are also saved in `/output/prompts.csv`
 
 With any questions, feel free to contact me at [daniel.szabo@oulu.fi](mailto:daniel.szabo@oulu.fi)
+
+### Docker
+
+If you prefer to run Codyan as a docker container, you can build the image and run it as follows:
+
+1. Build image with `docker build --tag codyan .`
+2. Run image with `docker run -d -p 8000:5000 codyan` where 8000 is the port you will access the application at
