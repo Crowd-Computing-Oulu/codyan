@@ -8,7 +8,7 @@
   <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='img/codyan-128px.png') }}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Homemade+Apple&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
@@ -48,7 +48,7 @@
         </ul>
         <ul class="navbar-nav">
           <li class="nav-item me-auto">
-            <a class="nav-link" href="https://github.com/Crowd-Computing-Oulu/codyan-app"><img
+            <a class="nav-link" href="https://github.com/Crowd-Computing-Oulu/codyan"><img
                 src="/static/github.svg" /> Source</a>
           </li>
         </ul>
@@ -64,10 +64,10 @@
       <p>
         The input consists of three files, of which one is optional. Prepare and upload these files based on the samples provided on the Input page. Press the "Remove" button to delete a file from Codyan and upload a new one if needed. If an upload was successful and the file format was correct, a summary of the file contents will be displayed.
         <ol>
-          <li><code>questions.csv</code></li>This file contains the the data you want to label, where each column contains the responses to the question in the column header. See a sample file containing 10 responses to a 3-item questionnaire <a href="https://github.com/Crowd-Computing-Oulu/codyan-app/blob/main/input_sample/responses.csv">here</a>. Make sure to title each column of responses as question_<i>N</i>: <i>your_question</i> where <i>N</i> is the number of the question and <i>your_question</i> is the question the participants were asked to answer. At least one column is required, but there is no upper limit.
-         <li><code>codebook.csv</code></li>This file contains the codebooks for each question, comprising of code names and code descriptions. If all your responses are coded using the same codebook, simply repeat the same columns for each question. See a sample file containing codes for the sample restaurant feedback questionnaire <a href="https://github.com/Crowd-Computing-Oulu/codyan-app/blob/main/input_sample/codes.csv">here</a>. Make sure to title each pair of columns as codes_<i>N</i> and descriptions_<i>N</i> where <i>N</i> is the number of the question the codes belong to. The number of columns should be exactly double what is in questions.csv, even if you do not have separate codebooks for each question.
+          <li><code>questions.csv</code></li>This file contains the the data you want to label, where each column contains the responses to the question in the column header. See a sample file containing 10 responses to a 3-item questionnaire <a href="https://github.com/Crowd-Computing-Oulu/codyan/blob/main/input_sample/responses.csv">here</a>. Make sure to title each column of responses as question_<i>N</i>: <i>your_question</i> where <i>N</i> is the number of the question and <i>your_question</i> is the question the participants were asked to answer. At least one column is required, but there is no upper limit.
+         <li><code>codebook.csv</code></li>This file contains the codebooks for each question, comprising of code names and code descriptions. If all your responses are coded using the same codebook, simply repeat the same columns for each question. See a sample file containing codes for the sample restaurant feedback questionnaire <a href="https://github.com/Crowd-Computing-Oulu/codyan/blob/main/input_sample/codes.csv">here</a>. Make sure to title each pair of columns as codes_<i>N</i> and descriptions_<i>N</i> where <i>N</i> is the number of the question the codes belong to. The number of columns should be exactly double what is in questions.csv, even if you do not have separate codebooks for each question.
           <li>(optional) <code>reference.csv</code></li>
-          The optional reference file includes human-assigned codes for the first K responses. See a sample file containing assigned codes for first 5 out of total 10 responses <a href="https://github.com/Crowd-Computing-Oulu/codyan-app/blob/main/input_sample/reference.csv">here</a>. The number of columns should match the number of questions in questions.csv exactly, with matching column numbering as well. There could be any number of rows in this file, as long as each row corresponds to the same row in the responses. This file is used to determine level of agreement between the Codyan and the human using the Krippendorff's Alpha with MASI distance on the Results page.
+          The optional reference file includes human-assigned codes for the first K responses. See a sample file containing assigned codes for first 5 out of total 10 responses <a href="https://github.com/Crowd-Computing-Oulu/codyan/blob/main/input_sample/reference.csv">here</a>. The number of columns should match the number of questions in questions.csv exactly, with matching column numbering as well. There could be any number of rows in this file, as long as each row corresponds to the same row in the responses. This file is used to determine level of agreement between the Codyan and the human using the Krippendorff's Alpha with MASI distance on the Results page.
         </ol>
       </p>
 
@@ -87,11 +87,28 @@
       
       <h4> 3. Results </h4>
 
+      <p>
+        Once the processing is finished, you can download the original LLM-assigne codes for each iteration on the Results tab by pressing "Download LLM Output". 
+      </p>
+
+      <p>
+        To obtain the final, statistically filtered codes for your data, pick a p-Value and press "Apply p-Value" to see the agreement value (if reference data was provided) and the assigned codes. To download these results as a CSV, press "Download results as CSV". If you are unhappy with the assigned codes, you can try picking a higher (if there are too many codes assigned to each row) or lower (if there are too few codes assigned to each row) p-value.
+      </p>
+
+
       <h4> 4. Sessions </h4>
+
+      <p>
+        Codyan does not support user accounts as of now, instead it uses browser session IDs. Your automatically assigned ID is visible at the bottom of the Home page. To collaborate with someone, you can join their session by entering their session ID in the text field at the bottom and clicking "Switch". The session ID is UUID version 4, meaning 5.3×10<sup>36</sup> combinations, making it hard to guess. Still, keep your ID safe if you work with sensitive data, and remove your input files when you are done processing.
+      </p>
 
       <h2> Installation Guide</h2>
 
+      You will find the installation guide <a href="https://github.com/Crowd-Computing-Oulu/codyan/blob/main/README.md">on GitHub</a>.
+
       <h2> Contribution Guide</h2>
+
+      Codyan is Open Source Software, and it is also open to contributions. If you have issues, requests or other feedback to share, you can do so at the <a href="https://github.com/Crowd-Computing-Oulu/codyan/issues">Issues page of our GitHub reopository</a>. If you want to implement a new feature or recommend an improvement, you can submit pull requests. Please be sure to follow <a  href="https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/getting-started/best-practices-for-pull-requests">best practice</a>.
     </div>
   </div>
   </div>
@@ -103,12 +120,12 @@
             <div class="offset-2 col-2"> <p class="text-muted">Daniel Szabo  <a href="mailto:daniel.szabo@oulu.fi">daniel.szabo@oulu.fi</a>
             </p></div>
             <div class="col-2"><p class="text-muted"><a
-              href="https://github.com/Crowd-Computing-Oulu/codyan-app/blob/main/LICENSE">License</a></p></div>
+              href="https://github.com/Crowd-Computing-Oulu/codyan/blob/main/LICENSE">License</a></p></div>
             <div class="col-2">
                 <p class="text-muted"><a href="crowdcomputing.net">Crowd Computing Oulu</a></p>
             </div>
             <div class="col-2">
-                <p class="text-muted"><a href="https://github.com/Crowd-Computing-Oulu/codyan-app">GitHub
+                <p class="text-muted"><a href="https://github.com/Crowd-Computing-Oulu/codyan">GitHub
                         Repository</a></p>
             </div>
         </div>

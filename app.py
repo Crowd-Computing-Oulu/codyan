@@ -18,7 +18,7 @@ app.secret_key = 'codyan2024'
 
 BATCH = False
 
-VERSION = "v24.7.19 ALPHA"
+VERSION = "v24.7.22 ALPHA"
 
 # possible statuses
 NOT_STARTED = 0
